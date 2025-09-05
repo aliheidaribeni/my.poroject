@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Vocabulary Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        select, button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            background: white;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .stats {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .flashcard {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            height: 400px;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            border-radius: 20px;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+        }
+
+        .word {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+
+        .pronunciation {
+            font-size: 1.5rem;
+            color: #636e72;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .meaning {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .unit-info {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            background: linear-gradient(45deg, #00b894, #00cec9);
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .pronunciation-button {
+            background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pronunciation-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        .pronunciation-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 600px) {
+            .word {
+                font-size: 2rem;
+            }
+            
+            .meaning {
+                font-size: 1.5rem;
+            }
+            
+            .pronunciation {
+                font-size: 1.2rem;
+            }
+            
+            .flashcard {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 English Vocabulary Flashcards</h1>
+        
+        <div class="controls">
+            <select id="unitSelect">
+                <option value="all">All Units</option>
+                <option value="1">Unit 1</option>
+                <option value="2">Unit 2</option>
+                <option value="3">Unit 3</option>
+                <option value="4">Unit 4</option>
+                <option value="6">Unit 6</option>
+                <option value="7">Unit 7</option>
+                <option value="8">Unit 8</option>
+                <option value="9">Unit 9</option>
+                <option value="10">Unit 10</option>
+            </select>
+            <button onclick="shuffleCards()">🔄 Shuffle</button>
+            <button onclick="resetProgress()">🔃 Reset</button>
+        </div>
+
+        <div class="stats">
+            <div>Card <span id="currentCard">1</span> of <span id="totalCards">0</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+            <div class="card-face">
+                <div class="word" id="word"></div>
+                <div class="pronunciation-container">
+                    <div class="pronunciation" id="pronunciation"></div>
+                    <button class="pronunciation-button" onclick="event.stopPropagation(); pronounceWord()" title="Pronounce word">
+                        🔊
+                    </button>
+                </div>
+                <div class="unit-info" id="unitInfo"></div>
+            </div>
+            <div class="card-face card-back">
+                <div class="meaning" id="meaning"></div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-button" onclick="previousCard()">⬅️ Previous</button>
+            <button class="nav-button" onclick="nextCard()">Next ➡️</button>
+        </div>
+    </div>
+
+    <script>
+        const vocabulary = {
+            1: [
+                {word: "Ambivalence", pronunciation: "/æmˈbɪvələns/", meaning: "تردید، دودلی"},
+                {word: "Ascertain", pronunciation: "/əˈsɜːtən/", meaning: "یقین حاصل کردن، کشف کردن"},
+                {word: "Autonomy", pronunciation: "/ɔːˈtɒnəmi/", meaning: "خودمختاری، استقلال"},
+                {word: "Destitute", pronunciation: "/ˈdɛstɪtjuːt/", meaning: "فقیر، محروم از نیازهای اولیه"},
+                {word: "Inception", pronunciation: "/ɪnˈsɛpʃən/", meaning: "آغاز، شروع"},
+                {word: "Acoustics", pronunciation: "/əˈkuːstɪks/", meaning: "آکوستیک، ویژگی‌های صوتی یک فضا"},
+                {word: "Modulate", pronunciation: "/ˈmɒdjʊleɪt/", meaning: "تنظیم کردن (صدا)، تغییر لحن"},
+                {word: "Audible", pronunciation: "/ˈɔːdəbəl/", meaning: "قابل شنیدن"},
+                {word: "Censure", pronunciation: "/ˈsɛnʃər/", meaning: "سرزنش شدید، مخالفت"},
+                {word: "Clamor", pronunciation: "/ˈklæmər/", meaning: "شور و غوغا، سر و صدای بلند"},
+                {word: "Decorum", pronunciation: "/dɪˈkɔːrəm/", meaning: "رفتار مناسب، ادب"},
+                {word: "Cacophony", pronunciation: "/kəˈkɒfəni/", meaning: "سر و صدای نامطبوع، همهمه"},
+                {word: "Repertoire", pronunciation: "/ˈrɛpətwɑːr/", meaning: "مجموعه مهارت‌ها یا قطعات اجرایی"},
+                {word: "Execution", pronunciation: "/ˌɛksɪˈkjuːʃən/", meaning: "اجرا، انجام دادن"}
+            ],
+            2: [
+                {word: "Annotate", pronunciation: "/ˈænəteɪt/", meaning: "حاشیه‌نویسی کردن، یادداشت گذاشتن"},
+                {word: "Vivid", pronunciation: "/ˈvɪvɪd/", meaning: "زنده، روشن (در توصیف)"},
+                {word: "Paraphrase", pronunciation: "/ˈpærəfreɪz/", meaning: "بازنویسی با کلمات دیگر"},
+                {word: "Diction", pronunciation: "/ˈdɪkʃən/", meaning: "واژگان، انتخاب کلمات"},
+                {word: "Intention", pronunciation: "/ɪnˈtɛnʃən/", meaning: "قصد، هدف"},
+                {word: "Thesis", pronunciation: "/ˈθiːsɪs/", meaning: "پایان‌نامه، ادعای اصلی"},
+                {word: "Coherence", pronunciation: "/koʊˈhɪrəns/", meaning: "انسجام، سازگاری"},
+                {word: "Cite", pronunciation: "/saɪt/", meaning: "نقل قول کردن، ارجاع دادن"},
+                {word: "Plagiarize", pronunciation: "/ˈpleɪdʒəraɪz/", meaning: "سرقت ادبی"},
+                {word: "Refute", pronunciation: "/rɪˈfjuːt/", meaning: "رد کردن، نقض کردن"}
+            ],
+            3: [
+                {word: "Calculate", pronunciation: "/ˈkælkjuleɪt/", meaning: "محاسبه کردن"},
+                {word: "Conventional", pronunciation: "/kənˈvɛnʃənl/", meaning: "سنتی، متداول"},
+                {word: "Alleviate", pronunciation: "/əˈliːvieɪt/", meaning: "تسکین دادن، کاهش درد"},
+                {word: "Status", pronunciation: "/ˈsteɪtəs/", meaning: "وضعیت، جایگاه اجتماعی"},
+                {word: "Taboo", pronunciation: "/təˈbuː/", meaning: "ممنوع، محرّم"},
+                {word: "Pervasive", pronunciation: "/pərˈveɪsɪv/", meaning: "گسترده، فراگیر"},
+                {word: "Socialization", pronunciation: "/ˌsoʊʃəlaɪˈzeɪʃən/", meaning: "اجتماعی‌شدن"},
+                {word: "Deviate", pronunciation: "/ˈdiːvieɪt/", meaning: "منحرف شدن"},
+                {word: "Stratification", pronunciation: "/ˌstræt��fɪˈkeɪʃən/", meaning: "طبقه‌بندی"},
+                {word: "Norm", pronunciation: "/nɔːrm/", meaning: "هنجار، رفتار معمول"},
+                {word: "Ostracize", pronunciation: "/ˈɒstrəsaɪz/", meaning: "طرد کردن اجتماعی"}
+            ],
+            4: [
+                {word: "Deciduous", pronunciation: "/dɪˈsɪdʒuəs/", meaning: "برگ‌ریز (درختان)"},
+                {word: "Fauna", pronunciation: "/ˈfɔːnə/", meaning: "جانوران یک منطقه"},
+                {word: "Flora", pronunciation: "/ˈflɔːrə/", meaning: "گیاهان یک منطقه"},
+                {word: "Lichen", pronunciation: "/ˈlaɪkən/", meaning: "شیشه (گونه‌ای گیاه کفای)"},
+                {word: "Metamorphosis", pronunciation: "/ˌmetəˈmɔːrfəsɪs/", meaning: "دگردیسی، تبدیل شکل"},
+                {word: "Myriad", pronunciation: "/ˈmɪriəd/", meaning: "بی‌شمار، هزاران"},
+                {word: "Parasitic", pronunciation: "/ˌpærəˈsɪtɪk/", meaning: "انگلی"},
+                {word: "Sojourn", pronunciation: "/ˈsɒdʒən/", meaning: "اقامت موقت"},
+                {word: "Species", pronunciation: "/ˈspiːʃiːz/", meaning: "گونه"},
+                {word: "Symbiotic", pronunciation: "/ˌsɪmbaɪˈɒtɪk/", meaning: "همزیستی"}
+            ],
+            6: [
+                {word: "Superior", pronunciation: "/suːˈpɪəriər/", meaning: "برتر"},
+                {word: "Surpass", pronunciation: "/sərˈpæs/", meaning: "از پس گرفتن، پیشی گرفتن"},
+                {word: "Supersize", pronunciation: "/ˌsuːpərˈsaɪz/", meaning: "بزرگ‌تر کردن"},
+                {word: "Survive", pronunciation: "/sərˈvaɪv/", meaning: "بقا داشتن"},
+                {word: "Supervise", pronunciation: "/ˈsuːpəvaɪz/", meaning: "نظارت کردن"},
+                {word: "Supermarket", pronunciation: "/ˈsuːpəmɑːrkɪt/", meaning: "سوپرمارکت"},
+                {word: "Surplus", pronunciation: "/ˈsɜːrpləs/", meaning: "مازاد"},
+                {word: "Superhero", pronunciation: "/ˈsuːpərˌhɪəroʊ/", meaning: "ابرقهرمان"},
+                {word: "Supernatural", pronunciation: "/ˌsuːpərˈnætʃrəl/", meaning: "ماوراءالطبیعه"},
+                {word: "Superhuman", pronunciation: "/ˌsuːpərˈhjuːmən/", meaning: "فراانسانی"}
+            ],
+            7: [
+                {word: "Port", pronunciation: "/pɔːrt/", meaning: "بندر، حمل"},
+                {word: "Passport", pronunciation: "/ˈpæspɔːrt/", meaning: "گذرنامه"},
+                {word: "Transportation", pronunciation: "/ˌtrænspɔːrˈteɪʃən/", meaning: "حمل و نقل"},
+                {word: "Import", pronunciation: "/ˈɪmpɔːrt/", meaning: "واردات"},
+                {word: "Export", pronunciation: "/ɪkˈspɔːrt/", meaning: "صادرات"},
+                {word: "Portable", pronunciation: "/ˈpɔːrtəbl/", meaning: "قابل حمل"},
+                {word: "Reporter", pronunciation: "/rɪˈpɔːrtər/", meaning: "گزارشگر"},
+                {word: "Portfolio", pronunciation: "/pɔːrˈtfoʊlioʊ/", meaning: "پرتفولیو، مجموعه کارها"},
+                {word: "Deportation", pronunciation: "/ˌdiːpɔːrˈteɪʃən/", meaning: "تبعید"},
+                {word: "Porter", pronunciation: "/ˈpɔːrtər/", meaning: "راهنما، کولی"}
+            ],
+            8: [
+                {word: "Multilingual", pronunciation: "/ˌmʌltiˈlɪŋɡwəl/", meaning: "چندزبانه"},
+                {word: "Multimedia", pronunciation: "/ˌmʌltiˈmiːdiə/", meaning: "چندرسانه‌ای"},
+                {word: "Multimillionaire", pronunciation: "/ˌmʌltiˌmɪljəˈner/", meaning: "چند میلیونر"},
+                {word: "Multicolored", pronunciation: "/ˌmʌltiˈkʌlərd/", meaning: "رنگارنگ"},
+                {word: "Multicultural", pronunciation: "/ˌmʌltiˈkʌltʃərəl/", meaning: "چندفرهنگی"},
+                {word: "Multidisciplinary", pronunciation: "/ˌmʌltiˌdɪsəˈplɪnəri/", meaning: "چند رشته‌ای"},
+                {word: "Multifaceted", pronunciation: "/ˌmʌltiˈfæsɪtɪd/", meaning: "چندوجهی"},
+                {word: "Multiple choice", pronunciation: "/ˈmʌltɪpl ʧɔɪs/", meaning: "تستی (چندگزینه‌ای)"},
+                {word: "Multipurpose", pronunciation: "/ˌmʌltiˈpɜːrpəs/", meaning: "چندکاره"},
+                {word: "Multiply", pronunciation: "/ˈmʌltɪplaɪ/", meaning: "ضرب کردن، افزایش دادن"}
+            ],
+            9: [
+                {word: "Befall", pronunciation: "/bɪˈfɔːl/", meaning: "اتفاق افتادن (معمولاً مصیبت)"},
+                {word: "Intrigue", pronunciation: "/ɪnˈtriːɡ/", meaning: "جلب توجه کردن، دلچسب بودن"},
+                {word: "Innovative", pronunciation: "/ˈɪnəveɪtɪv/", meaning: "نوآورانه"},
+                {word: "Pursue", pronunciation: "/pərˈsuː/", meaning: "تعقیب کردن، دنبال کردن"},
+                {word: "Ceremonial", pronunciation: "/ˌserəˈmoʊniəl/", meaning: "مراسمی"},
+                {word: "Overlook", pronunciation: "/ˌoʊvərˈlʊk/", meaning: "نادیده گرفتن، از بالا دیدن"},
+                {word: "Sacred", pronunciation: "/ˈseɪkrɪd/", meaning: "مقدس"},
+                {word: "Curious", pronunciation: "/ˈkjʊəriəs/", meaning: "کنجکاو"},
+                {word: "Passion", pronunciation: "/ˈpæʃən/", meaning: "اشتیاق، علاقه شدید"},
+                {word: "Horrify", pronunciation: "/ˈhɒrɪfaɪ/", meaning: "وحشت‌زده کردن"},
+                {word: "Unearth", pronunciation: "/ʌnˈɜːrθ/", meaning: "کشف کردن (چیز پنهان)"},
+                {word: "Statue", pronunciation: "/ˈstætʃuː/", meaning: "مجسمه"},
+                {word: "Ranks", pronunciation: "/ræŋks/", meaning: "رتبه‌ها"},
+                {word: "Intervention", pronunciation: "/ˌɪntərˈvenʃən/", meaning: "دخالت"},
+                {word: "Potent", pronunciation: "/ˈpoʊtənt/", meaning: "قدرتمند، مؤثر"}
+            ],
+            10: [
+                {word: "Evidence", pronunciation: "/ˈevɪdəns/", meaning: "شواهد، مدرک"},
+                {word: "Invisible", pronunciation: "/ɪnˈvɪzəbl/", meaning: "نامرئی"},
+                {word: "Revise", pronunciation: "/rɪˈvaɪz/", meaning: "بازبینی کردن"},
+                {word: "Supervisor", pronunciation: "/ˈsuːpəvaɪzər/", meaning: "ناظر، سرپرست"},
+                {word: "Visage", pronunciation: "/ˈvɪzɪdʒ/", meaning: "چهره"},
+                {word: "Providence", pronunciation: "/ˈprɒvɪdəns/", meaning: "دوراندیشی"},
+                {word: "Evident", pronunciation: "/ˈevɪdənt/", meaning: "آشکار، واضح"},
+                {word: "Visual", pronunciation: "/ˈvɪʃuəl/", meaning: "دیداری"},
+                {word: "Provide", pronunciation: "/prəˈvaɪd/", meaning: "فراهم کردن"},
+                {word: "Video", pronunciation: "/ˈvɪdioʊ/", meaning: "ویدئو، فیلم"}
+            ]
+        };
+
+        let currentCards = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Text-to-Speech function with professional American accent
+        function pronounceWord() {
+    if ('speechSynthesis' in window) {
+        const word = currentCards[currentIndex].word;
+        const utterance = new SpeechSynthesisUtterance(word);
+
+        // Natural, clear settings
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;   // closer to natural pace
+        utterance.pitch = 1.0;  // neutral pitch
+        utterance.volume = 1.0; // full clear volume
+
+        const voices = speechSynthesis.getVoices();
+
+        // Prioritize high-quality voices
+        const preferredVoices = [
+            'Microsoft Aria Online (Natural) - English (United States)',
+            'Google US English',
+            'Microsoft Guy Online (Natural) - English (United States)',
+            'Alex',
+            'Samantha'
+        ];
+
+        let selectedVoice = null;
+
+        for (const preferredName of preferredVoices) {
+            selectedVoice = voices.find(v => v.name === preferredName);
+            if (selectedVoice) break;
+        }
+
+        // Fallback to best available en-US voice
+        if (!selectedVoice) {
+            selectedVoice = voices.find(v => v.lang.startsWith('en-US'));
+        }
+
+        // Final fallback: any English voice
+        if (!selectedVoice) {
+            selectedVoice = voices.find(v => v.lang.startsWith('en'));
+        }
+
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
+        }
+
+        speechSynthesis.cancel();
+        setTimeout(() => {
+            speechSynthesis.speak(utterance);
+        }, 150);
+    }
+}
+
+        function loadCards(unit = 'all') {
+            currentCards = [];
+            if (unit === 'all') {
+                Object.keys(vocabulary).forEach(unitNum => {
+                    vocabulary[unitNum].forEach(card => {
+                        currentCards.push({...card, unit: unitNum});
+                    });
+                });
+            } else {
+                vocabulary[unit].forEach(card => {
+                    currentCards.push({...card, unit: unit});
+                });
+            }
+            currentIndex = 0;
+            updateCard();
+            updateStats();
+        }
+
+        function updateCard() {
+            const card = currentCards[currentIndex];
+            document.getElementById('word').textContent = card.word;
+            document.getElementById('pronunciation').textContent = card.pronunciation;
+            document.getElementById('meaning').textContent = card.meaning;
+            document.getElementById('unitInfo').textContent = `Unit ${card.unit}`;
+            
+            // Reset flip state
+            document.getElementById('flashcard').classList.remove('flipped');
+            isFlipped = false;
+
+            // Automatically pronounce the word when card is updated
+            setTimeout(() => {
+                // Ensure voices are loaded before pronunciation
+                if (speechSynthesis.getVoices().length > 0) {
+                    pronounceWord();
+                } else {
+                    // Wait a bit more if voices aren't loaded yet
+                    setTimeout(pronounceWord, 1000);
+                }
+            }, 300); // Reduced delay for more responsive experience
+        }
+
+        function updateStats() {
+            document.getElementById('currentCard').textContent = currentIndex + 1;
+            document.getElementById('totalCards').textContent = currentCards.length;
+            
+            const progress = ((currentIndex + 1) / currentCards.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function flipCard() {
+            const flashcard = document.getElementById('flashcard');
+            if (isFlipped) {
+                flashcard.classList.remove('flipped');
+            } else {
+                flashcard.classList.add('flipped');
+            }
+            isFlipped = !isFlipped;
+        }
+
+        function nextCard() {
+            if (currentIndex < currentCards.length - 1) {
+                currentIndex++;
+                updateCard();
+                updateStats();
+            }
+        }
+
+        function previousCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+                updateStats();
+            }
+        }
+
+        function shuffleCards() {
+            for (let i = currentCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentCards[i], currentCards[j]] = [currentCards[j], currentCards[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+            updateStats();
+        }
+
+        function resetProgress() {
+            currentIndex = 0;
+            updateCard();
+            updateStats();
+        }
+
+        // Event listeners
+        document.getElementById('unitSelect').addEventListener('change', function() {
+            loadCards(this.value);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                flipCard();
+            } else if (e.key === 'ArrowRight') {
+                nextCard();
+            } else if (e.key === 'ArrowLeft') {
+                previousCard();
+            } else if (e.key === 'p' || e.key === 'P') {
+                pronounceWord();
+            }
+        });
+
+        // Initialize voices and setup
+        function initializeVoices() {
+            if ('speechSynthesis' in window) {
+                // Force load voices
+                speechSynthesis.getVoices();
+                
+                // Log available voices for debugging
+                setTimeout(() => {
+                    const voices = speechSynthesis.getVoices();
+                    console.log('Available voices:');
+                    voices.forEach((voice, index) => {
+                        if (voice.lang.startsWith('en')) {
+                            console.log(`${index}: ${voice.name} (${voice.lang}) - ${voice.localService ? 'Local' : 'Remote'}`);
+                        }
+                    });
+                }, 100);
+            }
+        }
+
+        // Load voices when they become available
+        speechSynthesis.addEventListener('voiceschanged', initializeVoices);
+        
+        // Initialize on load
+        window.addEventListener('load', initializeVoices);
+
+        // Initialize
+        loadCards();
+    </script>
+</body>
+</html>

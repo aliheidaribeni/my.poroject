@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Vocabulary Flashcards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        select, button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            background: white;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .stats {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .flashcard {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            height: 400px;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            border-radius: 20px;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+        }
+
+        .word {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+
+        .pronunciation {
+            font-size: 1.5rem;
+            color: #636e72;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .meaning {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .unit-info {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            background: linear-gradient(45deg, #00b894, #00cec9);
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .pronunciation-button {
+            background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pronunciation-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        .pronunciation-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 600px) {
+            .word {
+                font-size: 2rem;
+            }
+
+            .meaning {
+                font-size: 1.5rem;
+            }
+
+            .pronunciation {
+                font-size: 1.2rem;
+            }
+
+            .flashcard {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 English Vocabulary Flashcards</h1>
+
+        <div class="controls">
+            <select id="unitSelect">
+                <option value="all">All Units</option>
+                <option value="1">Unit 1</option>
+                <option value="2">Unit 2</option>
+                <option value="3">Unit 3</option>
+                <option value="4">Unit 4</option>
+                <option value="5">Unit 5</option>
+                <option value="6">Unit 6</option>
+                <option value="7">Unit 7</option>
+                <option value="8">Unit 8</option>
+                <option value="9">Unit 9</option>
+            </select>
+            <button onclick="shuffleCards()">🔄 Shuffle</button>
+            <button onclick="resetProgress()">🔃 Reset</button>
+        </div>
+
+        <div class="stats">
+            <div>Card <span id="currentCard">1</span> of <span id="totalCards">0</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+            <div class="card-face">
+                <div class="word" id="word"></div>
+                <div class="pronunciation-container">
+                    <div class="pronunciation" id="pronunciation"></div>
+                    <button class="pronunciation-button" onclick="event.stopPropagation(); pronounceWord()" title="Pronounce word">
+                        🔊
+                    </button>
+                </div>
+                <div class="unit-info" id="unitInfo"></div>
+            </div>
+            <div class="card-face card-back">
+                <div class="meaning" id="meaning"></div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-button" onclick="previousCard()">⬅️ Previous</button>
+            <button class="nav-button" onclick="nextCard()">Next ➡️</button>
+        </div>
+    </div>
+
+    <script>
+        const vocabulary = {
+            1: [
+                {word: "Ambivalence", pronunciation: "", meaning: "تردید – دو دلی"},
+                {word: "Ascertain", pronunciation: "", meaning: "اثبات کردن – یقین حاصل کردن"},
+                {word: "Autonomy", pronunciation: "", meaning: "خودمختاری – استقالل"},
+                {word: "Destitute", pronunciation: "", meaning: "فقیر - ندار"},
+                {word: "Induce", pronunciation: "", meaning: "موجب شدن"},
+                {word: "Magnitude", pronunciation: "", meaning: "اندازه - عظمت"},
+                {word: "Martyrdom", pronunciation: "", meaning: "شهادت"},
+                {word: "Persecute", pronunciation: "", meaning: "مورد اذیت و آزار قرار دادن"},
+                {word: "Placate", pronunciation: "", meaning: "آرام کردن – تسکین بخشیدن"},
+                {word: "Utmost", pronunciation: "", meaning: "بیشترین"},
+                {word: "Anxiety", pronunciation: "", meaning: "اضطراب"},
+                {word: "Consequence", pronunciation: "", meaning: "نتیجه"},
+                {word: "Vulnerable", pronunciation: "", meaning: "آسیب‌پذیر"},
+                {word: "Mixed feelings", pronunciation: "", meaning: "احساسات متضاد"},
+                {word: "Contradictory ideas", pronunciation: "", meaning: "عقاید متناقض"},
+                {word: "Necessities of life", pronunciation: "", meaning: "ضروریات زندگی"},
+                {word: "Persuade", pronunciation: "", meaning: "متقاعد کردن"},
+                {word: "Suffering", pronunciation: "", meaning: "رنج کشیدن"},
+                {word: "Hostility", pronunciation: "", meaning: "خصومت"},
+                {word: "Ill-treatment", pronunciation: "", meaning: "بدرفتاری"},
+                {word: "Highlight", pronunciation: "", meaning: "برجسته کردن"},
+                {word: "Impose", pronunciation: "", meaning: "تحمیل کردن"},
+                {word: "Independence", pronunciation: "", meaning: "استقلال"},
+                {word: "Distract", pronunciation: "", meaning: "حواس پرت کردن"},
+                {word: "Oppress", pronunciation: "", meaning: "ظلم کردن"},
+                {word: "Aristocracy", pronunciation: "", meaning: "اشراف"},
+                {word: "Revolutionary", pronunciation: "", meaning: "انقلابی"},
+                {word: "Empty promises", pronunciation: "", meaning: "وعده‌های توخالی"}
+            ],
+            2: [
+                {word: "Annotate", pronunciation: "", meaning: "حاشیه‌نویسی کردن، یادداشت گذاشتن"},
+                {word: "Vivid", pronunciation: "", meaning: "زنده، روشن (در توصیف)"},
+                {word: "Paraphrase", pronunciation: "", meaning: "بازنویسی با کلمات دیگر"},
+                {word: "Diction", pronunciation: "", meaning: "واژگان، انتخاب کلمات"},
+                {word: "Intention", pronunciation: "", meaning: "قصد، هدف"},
+                {word: "Thesis", pronunciation: "", meaning: "پایان‌نامه، ادعای اصلی"},
+                {word: "Coherence", pronunciation: "", meaning: "انسجام، سازگاری"},
+                {word: "Cite", pronunciation: "", meaning: "نقل قول کردن، ارجاع دادن"},
+                {word: "Plagiarize", pronunciation: "", meaning: "سرقت ادبی"},
+                {word: "Refute", pronunciation: "", meaning: "رد کردن، نقض کردن"},
+                {word: "Evidence", pronunciation: "", meaning: "مدرک"},
+                {word: "Synthesize", pronunciation: "", meaning: "ترکیب کردن"},
+                {word: "Clarity", pronunciation: "", meaning: "وضوح"},
+                {word: "Deportation", pronunciation: "", meaning: "اخراج"},
+                {word: "Export", pronunciation: "", meaning: "صادر کردن"},
+                {word: "Import", pronunciation: "", meaning: "وارد کردن"},
+                {word: "Port", pronunciation: "", meaning: "بندر"},
+                {word: "Portable", pronunciation: "", meaning: "قابل حمل"},
+                {word: "Porter", pronunciation: "", meaning: "باربر"},
+                {word: "Portfolio", pronunciation: "", meaning: "نمونه کار"},
+                {word: "Report", pronunciation: "", meaning: "گزارش"},
+                {word: "Reporter", pronunciation: "", meaning: "خبرنگار"},
+                {word: "Transportation", pronunciation: "", meaning: "حمل و نقل"},
+                {word: "Accusation", pronunciation: "", meaning: "اتهام"},
+                {word: "Commentary", pronunciation: "", meaning: "توضیح"},
+                {word: "Complex", pronunciation: "", meaning: "پیچیده"},
+                {word: "Concept", pronunciation: "", meaning: "مفهوم"},
+                {word: "Credible", pronunciation: "", meaning: "معتبر"},
+                {word: "Dishonesty", pronunciation: "", meaning: "بی‌صداقتی"},
+                {word: "Effective", pronunciation: "", meaning: "موثر"},
+                {word: "Enhance", pronunciation: "", meaning: "افزایش دادن"},
+                {word: "Enroll in", pronunciation: "", meaning: "ثبت نام کردن"},
+                {word: "Ensure", pronunciation: "", meaning: "مطمئن شدن"},
+                {word: "Logical", pronunciation: "", meaning: "منطقی"},
+                {word: "Performance", pronunciation: "", meaning: "عملکرد"},
+                {word: "Persuasive", pronunciation: "", meaning: "متقاعدکننده"},
+                {word: "Pursue", pronunciation: "", meaning: "دنبال کردن"}
+            ],
+            3: [
+                {word: "Calculate", pronunciation: "", meaning: "محاسبه کردن"},
+                {word: "Horizontal", pronunciation: "", meaning: "افقی"},
+                {word: "Intersect", pronunciation: "", meaning: "تقاطع"},
+                {word: "Mean", pronunciation: "", meaning: "میانگین"},
+                {word: "Median", pronunciation: "", meaning: "میانه"},
+                {word: "Parallel", pronunciation: "", meaning: "موازی"},
+                {word: "Quota", pronunciation: "", meaning: "سهم"},
+                {word: "Statistics", pronunciation: "", meaning: "آمار و ارقام – علم آمار"},
+                {word: "Symmetrical", pronunciation: "", meaning: "متقارن"},
+                {word: "Variable", pronunciation: "", meaning: "متغیر- عامل متغیر"},
+                {word: "Distribution", pronunciation: "", meaning: "توزیع"},
+                {word: "Random", pronunciation: "", meaning: "تصادفی"},
+                {word: "Miniscule", pronunciation: "", meaning: "بسیار کوچک"},
+                {word: "Minimalism", pronunciation: "", meaning: "مینیمالیسم"},
+                {word: "Minibus", pronunciation: "", meaning: "مینی‌بوس"},
+                {word: "Miniature", pronunciation: "", meaning: "مینیاتور"},
+                {word: "Minorities", pronunciation: "", meaning: "اقلیت‌ها"},
+                {word: "Minimum", pronunciation: "", meaning: "حداقل"},
+                {word: "Minus", pronunciation: "", meaning: "منها"},
+                {word: "Minimize", pronunciation: "", meaning: "به حداقل رساندن"},
+                {word: "Minor", pronunciation: "", meaning: "جزئی – صغیر"},
+                {word: "Appreciate", pronunciation: "", meaning: "قدردانی کردن"},
+                {word: "Ascending order", pronunciation: "", meaning: "ترتیب صعودی"},
+                {word: "Compared with", pronunciation: "", meaning: "در مقایسه با"},
+                {word: "Contribute to", pronunciation: "", meaning: "مشارکت کردن در"},
+                {word: "Crucial", pronunciation: "", meaning: "حیاتی"},
+                {word: "Donation", pronunciation: "", meaning: "کمک مالی"},
+                {word: "Exhibit", pronunciation: "", meaning: "نمایش دادن"},
+                {word: "Interest rate", pronunciation: "", meaning: "نرخ بهره"},
+                {word: "Make sense of", pronunciation: "", meaning: "معنی چیزی را فهمیدن"},
+                {word: "Outlier", pronunciation: "", meaning: "داده پرت"},
+                {word: "Proportion", pronunciation: "", meaning: "نسبت"},
+                {word: "Represent", pronunciation: "", meaning: "نمایندگی کردن"},
+                {word: "Snowflake", pronunciation: "", meaning: "دانه برف"},
+                {word: "Vertical", pronunciation: "", meaning: "عمودی"}
+            ],
+            4: [
+                {word: "Perfunctory", pronunciation: "", meaning: "سطحی"},
+                {word: "Pervade", pronunciation: "", meaning: "فرا گرفتن"},
+                {word: "Ponderous", pronunciation: "", meaning: "سنگین"},
+                {word: "Preclude", pronunciation: "", meaning: "جلوگیری کردن"},
+                {word: "Profound", pronunciation: "", meaning: "عمیق"},
+                {word: "Prodigious", pronunciation: "", meaning: "عظیم"},
+                {word: "Reproach", pronunciation: "", meaning: "سرزنش"},
+                {word: "Stagnant", pronunciation: "", meaning: "راکد"},
+                {word: "Subsidize", pronunciation: "", meaning: "یارانه دادن"},
+                {word: "Superfluous", pronunciation: "", meaning: "اضافی"},
+                {word: "Resilient", pronunciation: "", meaning: "مقاوم"},
+                {word: "Innovation", pronunciation: "", meaning: "نوآوری"},
+                {word: "Crucial", pronunciation: "", meaning: "حیاتی"},
+                {word: "Deciduous", pronunciation: "", meaning: "برگ‌ریز (درختان)"},
+                {word: "Fauna", pronunciation: "", meaning: "جانوران یک منطقه"},
+                {word: "Flora", pronunciation: "", meaning: "گیاهان یک منطقه"},
+                {word: "Lichen", pronunciation: "", meaning: "شیشه (گونه‌ای گیاه کفای)"},
+                {word: "Metamorphosis", pronunciation: "", meaning: "دگردیسی، تبدیل شکل"},
+                {word: "Myriad", pronunciation: "", meaning: "بی‌شمار، هزاران"},
+                {word: "Parasitic", pronunciation: "", meaning: "انگلی"},
+                {word: "Sojourn", pronunciation: "", meaning: "اقامت موقت"},
+                {word: "Species", pronunciation: "", meaning: "گونه"},
+                {word: "Symbiotic", pronunciation: "", meaning: "همزیستی"},
+                {word: "Habitat", pronunciation: "", meaning: "زیستگاه"},
+                {word: "Decomposition", pronunciation: "", meaning: "تجزیه"},
+                {word: "Erosion", pronunciation: "", meaning: "فرسایش"},
+                {word: "Precede", pronunciation: "", meaning: "مقدم بودن بر"},
+                {word: "Predict", pronunciation: "", meaning: "پیش‌بینی کردن"},
+                {word: "Precancerous", pronunciation: "", meaning: "پیش‌سرطانی"},
+                {word: "Preconceived", pronunciation: "", meaning: "تصورات قبلی"},
+                {word: "Precooked", pronunciation: "", meaning: "از پیش پخته شده"},
+                {word: "Pre-existing", pronunciation: "", meaning: "از قبل موجود"},
+                {word: "Prefabricated", pronunciation: "", meaning: "از پیش ساخته شده"},
+                {word: "Prehistoric", pronunciation: "", meaning: "ماقبل تاریخ"},
+                {word: "Premature", pronunciation: "", meaning: "زودرس"},
+                {word: "Premeditated", pronunciation: "", meaning: "از پیش برنامه‌ریزی شده"},
+                {word: "Prenuptial", pronunciation: "", meaning: "پیش از ازدواج"},
+                {word: "Prerequisite", pronunciation: "", meaning: "پیش‌نیاز"},
+                {word: "Preschool", pronunciation: "", meaning: "مهد کودک"},
+                {word: "Preshrunk", pronunciation: "", meaning: "از پیش آب‌رفته"},
+                {word: "Adhere to", pronunciation: "", meaning: "پایبند بودن به"},
+                {word: "Get a raise", pronunciation: "", meaning: "حقوق افزایش یافتن"},
+                {word: "Assembly", pronunciation: "", meaning: "مجلس"},
+                {word: "Tip", pronunciation: "", meaning: "انعام دادن"},
+                {word: "Mainstream", pronunciation: "", meaning: "جریان اصلی"},
+                {word: "Discontent", pronunciation: "", meaning: "نارضایتی"},
+                {word: "Syllabus", pronunciation: "", meaning: "برنامه درسی"},
+                {word: "Bustling", pronunciation: "", meaning: "شلوغ"}
+            ],
+            5: [
+                {word: "Embellish", pronunciation: "", meaning: "آراستن"},
+                {word: "Endorse", pronunciation: "", meaning: "تایید کردن"},
+                {word: "Envisage", pronunciation: "", meaning: "پیش بینی کردن"},
+                {word: "Explicit", pronunciation: "", meaning: "صریح"},
+                {word: "Facet", pronunciation: "", meaning: "جنبه"},
+                {word: "Inhibit", pronunciation: "", meaning: "بازداری کردن"},
+                {word: "Perceive", pronunciation: "", meaning: "درک کردن"},
+                {word: "Placid", pronunciation: "", meaning: "آرام"},
+                {word: "Proponent", pronunciation: "", meaning: "طرفدار"},
+                {word: "Rhetoric", pronunciation: "", meaning: "فصاحت و بلاغت"},
+                {word: "Depict", pronunciation: "", meaning: "به تصویر کشیدن"},
+                {word: "Abstract", pronunciation: "", meaning: "انتزاعی"},
+                {word: "Audible", pronunciation: "", meaning: "قابل شنیدن"},
+                {word: "Cacophony", pronunciation: "", meaning: "ناهمخوانی"},
+                {word: "Censure", pronunciation: "", meaning: "سرزنش کردن"},
+                {word: "Clamor", pronunciation: "", meaning: "هیاهو"},
+                {word: "Decorum", pronunciation: "", meaning: "آداب"},
+                {word: "Execution", pronunciation: "", meaning: "اجرا"},
+                {word: "Inception", pronunciation: "", meaning: "آغاز"},
+                {word: "Modulate", pronunciation: "", meaning: "تنظیم کردن"},
+                {word: "Repertoire", pronunciation: "", meaning: "مجموعه"},
+                {word: "Supervise", pronunciation: "", meaning: "نظارت کردن"},
+                {word: "Supermarket", pronunciation: "", meaning: "سوپرمارکت"},
+                {word: "Superhero", pronunciation: "", meaning: "ابرقهرمان"},
+                {word: "Superior", pronunciation: "", meaning: "برتر"},
+                {word: "Supersize", pronunciation: "", meaning: "خیلی بزرگ کردن"},
+                {word: "Survive", pronunciation: "", meaning: "زنده ماندن"},
+                {word: "Surplus", pronunciation: "", meaning: "مازاد"},
+                {word: "Supernatural", pronunciation: "", meaning: "ماوراءالطبیعه"},
+                {word: "Superhuman", pronunciation: "", meaning: "فرا انسانی"},
+                {word: "Surpassed", pronunciation: "", meaning: "پشت سر گذاشتن"},
+                {word: "Anticipation", pronunciation: "", meaning: "انتظار"},
+                {word: "Applause", pronunciation: "", meaning: "تشویق"},
+                {word: "Approach", pronunciation: "", meaning: "نزدیک شدن"},
+                {word: "Attire", pronunciation: "", meaning: "لباس"},
+                {word: "Blend", pronunciation: "", meaning: "مخلوط کردن"},
+                {word: "Chaotic", pronunciation: "", meaning: "آشفته"},
+                {word: "Controversial", pronunciation: "", meaning: "بحث‌برانگیز"},
+                {word: "Convey", pronunciation: "", meaning: "انتقال دادن"},
+                {word: "Enhance", pronunciation: "", meaning: "بهبود بخشیدن"},
+                {word: "Exemplify", pronunciation: "", meaning: "نمونه بودن"},
+                {word: "Extensive", pronunciation: "", meaning: "گسترده"},
+                {word: "Finale", pronunciation: "", meaning: "پایان"},
+                {word: "Flawless", pronunciation: "", meaning: "بی‌نقص"},
+                {word: "Mishap", pronunciation: "", meaning: "بدشانسی"},
+                {word: "Thrilling", pronunciation: "", meaning: "هیجان‌انگیز"}
+            ],
+            6: [
+                {word: "Alleviate", pronunciation: "", meaning: "تسکین دادن"},
+                {word: "Conventional", pronunciation: "", meaning: "متعارف"},
+                {word: "Deviate", pronunciation: "", meaning: "منحرف شدن"},
+                {word: "Norm", pronunciation: "", meaning: "هنجار"},
+                {word: "Ostracize", pronunciation: "", meaning: "طرد کردن"},
+                {word: "Pervasive", pronunciation: "", meaning: "فراگیر"},
+                {word: "Socialization", pronunciation: "", meaning: "جامعه‌پذیری"},
+                {word: "Status", pronunciation: "", meaning: "وضعیت"},
+                {word: "Stratification", pronunciation: "", meaning: "طبقه بندی"},
+                {word: "Taboo", pronunciation: "", meaning: "تابو"},
+                {word: "Conformity", pronunciation: "", meaning: "همرنگی با جماعت"},
+                {word: "Sanction", pronunciation: "", meaning: "تحریم"},
+                {word: "Pre-", pronunciation: "", meaning: "پیش از"},
+                {word: "Pre-existing medical condition", pronunciation: "", meaning: "شرایط پزشکی از قبل موجود"},
+                {word: "Pre-fabricated house", pronunciation: "", meaning: "خانه پیش ساخته"},
+                {word: "Prehistoric remains", pronunciation: "", meaning: "بقایای ماقبل تاریخ"},
+                {word: "Premature baby", pronunciation: "", meaning: "نوزاد نارس"},
+                {word: "Premeditated murder", pronunciation: "", meaning: "قتل عمد"},
+                {word: "Prenuptial agreement", pronunciation: "", meaning: "توافق‌نامه پیش از ازدواج"},
+                {word: "Prerequisite course", pronunciation: "", meaning: "درس پیش‌نیاز"},
+                {word: "Preschool children", pronunciation: "", meaning: "کودکان پیش دبستانی"},
+                {word: "Preshrunk T-shirt", pronunciation: "", meaning: "تی‌شرت از پیش آب‌رفته"}
+            ],
+            7: [
+                {word: "Burgeon", pronunciation: "", meaning: "شکوفا شدن"},
+                {word: "Escapade", pronunciation: "", meaning: "ماجراجویی"},
+                {word: "Expedition", pronunciation: "", meaning: "سفر علمی یا کاوشی"},
+                {word: "Fluctuate", pronunciation: "", meaning: "نوسان داشتن"},
+                {word: "Fortitude", pronunciation: "", meaning: "استقامت و شکیبایی"},
+                {word: "Magnanimous", pronunciation: "", meaning: "بزرگوار- بخشنده"},
+                {word: "Peninsula", pronunciation: "", meaning: "شبه جزیره"},
+                {word: "Plateau", pronunciation: "", meaning: "فلات"},
+                {word: "Pristine", pronunciation: "", meaning: "بکر و دست نخورده"},
+                {word: "Terrain", pronunciation: "", meaning: "زمین"},
+                {word: "Indigenous", pronunciation: "", meaning: "بومی"},
+                {word: "Biodiversity", pronunciation: "", meaning: "تنوع زیستی"},
+                {word: "Anthropology", pronunciation: "", meaning: "مردم‌شناسی"},
+                {word: "Archaeology", pronunciation: "", meaning: "باستان‌شناسی"},
+                {word: "Bacteriology", pronunciation: "", meaning: "باکتری‌شناسی"},
+                {word: "Biology", pronunciation: "", meaning: "زیست‌شناسی"},
+                {word: "Cardiology", pronunciation: "", meaning: "قلب‌شناسی"},
+                {word: "Geology", pronunciation: "", meaning: "زمین‌شناسی"},
+                {word: "Meteorology", pronunciation: "", meaning: "هواشناسی"},
+                {word: "Pharmacology", pronunciation: "", meaning: "داروشناسی"},
+                {word: "Psychology", pronunciation: "", meaning: "روان‌شناسی"},
+                {word: "Technology", pronunciation: "", meaning: "فناوری"},
+                {word: "Tornadoes", pronunciation: "", meaning: "گردباد"},
+                {word: "Hurricanes", pronunciation: "", meaning: "طوفان"},
+                {word: "Excavation", pronunciation: "", meaning: "حفاری"},
+                {word: "Depression", pronunciation: "", meaning: "افسردگی"},
+                {word: "Layers of rock", pronunciation: "", meaning: "لایه‌های سنگ"},
+                {word: "Heart disease", pronunciation: "", meaning: "بیماری قلبی"}
+            ],
+            8: [
+                {word: "Affluence", pronunciation: "", meaning: "ثروت"},
+                {word: "Annals", pronunciation: "", meaning: "تاریخچه"},
+                {word: "Export", pronunciation: "", meaning: "صادر کردن – صادرات"},
+                {word: "Levy", pronunciation: "", meaning: "مالیات بستن"},
+                {word: "Multitude", pronunciation: "", meaning: "تعداد زیاد"},
+                {word: "Nomadic", pronunciation: "", meaning: "کوچ نشین"},
+                {word: "Posterity", pronunciation: "", meaning: "نسل‌های آینده"},
+                {word: "Proliferate", pronunciation: "", meaning: "تکثیر شدن"},
+                {word: "Repute", pronunciation: "", meaning: "شهرت"},
+                {word: "Underscore", pronunciation: "", meaning: "تاکید کردن"},
+                {word: "Prosperous", pronunciation: "", meaning: "مرفه"},
+                {word: "Commerce", pronunciation: "", meaning: "تجارت"},
+                {word: "Acclaim", pronunciation: "", meaning: "تحسین"},
+                {word: "Advocate", pronunciation: "", meaning: "طرفداری کردن"},
+                {word: "Apprehensive", pronunciation: "", meaning: "نگران"},
+                {word: "Aversion", pronunciation: "", meaning: "تنفر"},
+                {word: "Catalyst", pronunciation: "", meaning: "کاتالیزور"},
+                {word: "Disrupt", pronunciation: "", meaning: "مختل کردن"},
+                {word: "Emphasize", pronunciation: "", meaning: "تاکید کردن"},
+                {word: "Flourish", pronunciation: "", meaning: "شکوفا شدن"},
+                {word: "Inconvenient", pronunciation: "", meaning: "نامناسب"},
+                {word: "Ineffective", pronunciation: "", meaning: "بی‌اثر"},
+                {word: "Obsolete", pronunciation: "", meaning: "منسوخ"},
+                {word: "Optimum", pronunciation: "", meaning: "بهینه"},
+                {word: "Plummet", pronunciation: "", meaning: "سقوط کردن"},
+                {word: "Resentment", pronunciation: "", meaning: "رنجش"},
+                {word: "Strive", pronunciation: "", meaning: "کوشیدن"},
+                {word: "Unprecedented", pronunciation: "", meaning: "بی‌سابقه"}
+            ],
+            9: [
+                {word: "Comply", pronunciation: "", meaning: "پیروی کردن"},
+                {word: "Conjecture", pronunciation: "", meaning: "حدس"},
+                {word: "Connoisseur", pronunciation: "", meaning: "خبره"},
+                {word: "Deplete", pronunciation: "", meaning: "تمام کردن"},
+                {word: "Deride", pronunciation: "", meaning: "تمسخر کردن"},
+                {word: "Evade", pronunciation: "", meaning: "طفره رفتن"},
+                {word: "Intrigue", pronunciation: "", meaning: "جلب کردن"},
+                {word: "Overlook", pronunciation: "", meaning: "نادیده گرفتن"},
+                {word: "Potent", pronunciation: "", meaning: "قوی"},
+                {word: "Pursue", pronunciation: "", meaning: "دنبال کردن"},
+                {word: "Incentive", pronunciation: "", meaning: "انگیزه"},
+                {word: "Innovative", pronunciation: "", meaning: "نوآورانه"},
+                {word: "Intervention", pronunciation: "", meaning: "مداخله"},
+                {word: "Passion", pronunciation: "", meaning: "اشتیاق"},
+                {word: "Immutable", pronunciation: "", meaning: "تغییرناپذیر"},
+                {word: "Artifact", pronunciation: "", meaning: "دست‌ساخته"},
+                {word: "Quell", pronunciation: "", meaning: "فرونشاندن"},
+                {word: "Heinous", pronunciation: "", meaning: "شنیع"},
+                {word: "Manifest", pronunciation: "", meaning: "آشکار کردن"},
+                {word: "Viable", pronunciation: "", meaning: "مقرون به صرفه – قابل اجرا"},
+                {word: "Meticulous", pronunciation: "", meaning: "دقیق و وسواس‌گونه"},
+                {word: "Unearth", pronunciation: "", meaning: "کشف کردن"},
+                {word: "Horrified", pronunciation: "", meaning: "وحشت‌زده"},
+                {word: "Befall", pronunciation: "", meaning: "اتفاق افتادن"},
+                {word: "Injectable", pronunciation: "", meaning: "تزریقی"},
+                {word: "Ominous", pronunciation: "", meaning: "شوم"},
+                {word: "Sacred", pronunciation: "", meaning: "مقدس"},
+                {word: "Statue", pronunciation: "", meaning: "مجسمه"},
+                {word: "Projectile", pronunciation: "", meaning: "پرتابه"},
+                {word: "Trajectory", pronunciation: "", meaning: "مسیر"},
+                {word: "Ritual", pronunciation: "", meaning: "مراسم"},
+                {word: "Ranks", pronunciation: "", meaning: "رتبه‌ها"},
+                {word: "Hierarchy", pronunciation: "", meaning: "سلسله مراتب"},
+                {word: "Interjection", pronunciation: "", meaning: "مداخله کلامی"},
+                {word: "Objection", pronunciation: "", meaning: "اعتراض"},
+                {word: "Figure", pronunciation: "", meaning: "شکل"},
+                {word: "Path", pronunciation: "", meaning: "مسیر"},
+                {word: "Device", pronunciation: "", meaning: "وسیله"},
+                {word: "Aspect", pronunciation: "", meaning: "جنبه"}
+            ]
+        };
+
+        let currentCards = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Text-to-Speech function with professional American accent
+        function pronounceWord() {
+    if ('speechSynthesis' in window) {
+        const word = currentCards[currentIndex].word;
+        const utterance = new SpeechSynthesisUtterance(word);
+
+        // Natural, clear settings
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;   // closer to natural pace
+        utterance.pitch = 1.0;  // neutral pitch
+        utterance.volume = 1.0; // full clear volume
+
+        const voices = speechSynthesis.getVoices();
+
+        // Prioritize high-quality voices
+        const preferredVoices = [
+            'Microsoft Aria Online (Natural) - English (United States)',
+            'Google US English',
+            'Microsoft Guy Online (Natural) - English (United States)',
+            'Alex',
+            'Samantha'
+        ];
+
+        let selectedVoice = null;
+
+        for (const preferredName of preferredVoices) {
+            selectedVoice = voices.find(v => v.name === preferredName);
+            if (selectedVoice) break;
+        }
+
+        // Fallback to best available en-US voice
+        if (!selectedVoice) {
+            selectedVoice = voices.find(v => v.lang.startsWith('en-US'));
+        }
+
+        // Final fallback: any English voice
+        if (!selectedVoice) {
+            selectedVoice = voices.find(v => v.lang.startsWith('en'));
+        }
+
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
+        }
+
+        speechSynthesis.cancel();
+        setTimeout(() => {
+            speechSynthesis.speak(utterance);
+        }, 150);
+    }
+}
+
+        function loadCards(unit = 'all') {
+            currentCards = [];
+            if (unit === 'all') {
+                Object.keys(vocabulary).forEach(unitNum => {
+                    vocabulary[unitNum].forEach(card => {
+                        currentCards.push({...card, unit: unitNum});
+                    });
+                });
+            } else {
+                vocabulary[unit].forEach(card => {
+                    currentCards.push({...card, unit: unit});
+                });
+            }
+            currentIndex = 0;
+            updateCard();
+            updateStats();
+        }
+
+        function updateCard() {
+            const card = currentCards[currentIndex];
+            document.getElementById('word').textContent = card.word;
+            document.getElementById('pronunciation').textContent = card.pronunciation;
+            document.getElementById('meaning').textContent = card.meaning;
+            document.getElementById('unitInfo').textContent = `Unit ${card.unit}`;
+
+            // Reset flip state
+            document.getElementById('flashcard').classList.remove('flipped');
+            isFlipped = false;
+
+            // Automatically pronounce the word when card is updated
+            setTimeout(() => {
+                // Ensure voices are loaded before pronunciation
+                if (speechSynthesis.getVoices().length > 0) {
+                    pronounceWord();
+                } else {
+                    // Wait a bit more if voices aren't loaded yet
+                    setTimeout(pronounceWord, 1000);
+                }
+            }, 300); // Reduced delay for more responsive experience
+        }
+
+        function updateStats() {
+            document.getElementById('currentCard').textContent = currentIndex + 1;
+            document.getElementById('totalCards').textContent = currentCards.length;
+
+            const progress = ((currentIndex + 1) / currentCards.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function flipCard() {
+            const flashcard = document.getElementById('flashcard');
+            if (isFlipped) {
+                flashcard.classList.remove('flipped');
+            } else {
+                flashcard.classList.add('flipped');
+            }
+            isFlipped = !isFlipped;
+        }
+
+        function nextCard() {
+            if (currentIndex < currentCards.length - 1) {
+                currentIndex++;
+                updateCard();
+                updateStats();
+            }
+        }
+
+        function previousCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+                updateStats();
+            }
+        }
+
+        function shuffleCards() {
+            for (let i = currentCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentCards[i], currentCards[j]] = [currentCards[j], currentCards[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+            updateStats();
+        }
+
+        function resetProgress() {
+            currentIndex = 0;
+            updateCard();
+            updateStats();
+        }
+
+        // Event listeners
+        document.getElementById('unitSelect').addEventListener('change', function() {
+            loadCards(this.value);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                flipCard();
+            } else if (e.key === 'ArrowRight') {
+                nextCard();
+            } else if (e.key === 'ArrowLeft') {
+                previousCard();
+            } else if (e.key === 'p' || e.key === 'P') {
+                pronounceWord();
+            }
+        });
+
+        // Initialize voices and setup
+        function initializeVoices() {
+            if ('speechSynthesis' in window) {
+                // Force load voices
+                speechSynthesis.getVoices();
+
+                // Log available voices for debugging
+                setTimeout(() => {
+                    const voices = speechSynthesis.getVoices();
+                    console.log('Available voices:');
+                    voices.forEach((voice, index) => {
+                        if (voice.lang.startsWith('en')) {
+                            console.log(`${index}: ${voice.name} (${voice.lang}) - ${voice.localService ? 'Local' : 'Remote'}`);
+                        }
+                    });
+                }, 100);
+            }
+        }
+
+        // Load voices when they become available
+        speechSynthesis.addEventListener('voiceschanged', initializeVoices);
+
+        // Initialize on load
+        window.addEventListener('load', initializeVoices);
+
+        // Initialize
+        loadCards();
+    </script>
+</body>
+</html>
