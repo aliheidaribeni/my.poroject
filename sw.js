@@ -1,32 +1,35 @@
-// ثبت Service Worker برای فعال کردن قابلیت آفلاین
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('SW registered: ', registration);
-      })
-      .catch(registrationError => {
-        console.log('SW registration failed: ', registrationError);
-      });
-  });
-}
-
-// آرایه‌ای از فلش‌کارت‌های شما
-const flashcardLinks = [
-    { title: 'مجموعه لغات انگلیسی', url: 'flashcards/english.html' },
-    { title: 'مجموعه لغات آلمانی', url: 'flashcards/german.html' },
-    { title: 'فلش‌کارت‌های شخصی من', url: 'http://localhost:8000/my-personal-cards.html' }
+const CACHE_NAME = 'flashcards-cache-v1';
+const urlsToCache = [
+  '/',
+  '/index.html',
+  '/style.css',
+  '/app.js',
+  '/manifest.json',
+  '/images/icon-192x192.png',
+  '/images/icon-512x512.png',
+  '/flashcards/english.html',
+  '/flashcards/german.html'
+  // اینجا فایل‌های فلش‌کارت‌های دیگر خود را اضافه کنید
 ];
 
-// نمایش لیست فلش‌کارت‌ها در صفحه
-document.addEventListener('DOMContentLoaded', () => {
-    const listElement = document.getElementById('flashcard-list');
-    flashcardLinks.forEach(card => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.textContent = card.title;
-        a.href = card.url;
-        li.appendChild(a);
-        listElement.appendChild(li);
-    });
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request);
+      })
+  );
 });
