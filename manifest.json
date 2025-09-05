@@ -1,3 +1,21 @@
 {
-	"folders": []
+  "name": "اپلیکیشن فلش‌کارت آفلاین",
+  "short_name": "فلش‌کارت",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4285f4",
+  "description": "یک اپلیکیشن فلش‌کارت که به صورت آفلاین کار می‌کند.",
+  "icons": [
+    {
+      "src": "images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
