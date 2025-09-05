@@ -1,21 +1,13 @@
-// ثبت Service Worker برای فعال کردن قابلیت آفلاین
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('SW registered: ', registration);
-      })
-      .catch(registrationError => {
-        console.log('SW registration failed: ', registrationError);
-      });
-  });
-}
-
 // آرایه‌ای از فلش‌کارت‌های شما
 const flashcardLinks = [
-    { title: 'مجموعه لغات انگلیسی', url: 'flashcards/english.html' },
-    { title: 'مجموعه لغات آلمانی', url: 'flashcards/german.html' },
-    { title: 'فلش‌کارت‌های شخصی من', url: 'http://localhost:8000/my-personal-cards.html' }
+    { title: 'Flash card essential word for tofel', url: 'flashcards/flash card essential word for tofel .html' },
+    { title: 'flash card vocab 1- 9 fundation', url: 'flashcards/flash card vocab 1- 9 fundation.html' },
+    { title: 'flashcard 400', url: 'flashcards/flashcard 400 .html' },
+    { title: 'flashcard 400 phone', url: 'flashcards/flashcard 400 phone.html' },
+    { title: 'flashcard essential word phone', url: 'flashcards/flashcard essential word phone.html' },
+    { title: 'flashcard fundation 1-9 phone', url: 'flashcards/flashcard fundation 1-9 phone.html' },
+    { title: 'flashcard mobile', url: 'flashcards/flashcard mobile.html' },
+    { title: 'Flashcards_pc', url: 'flashcards/Flashcards_pc.html' }
 ];
 
 // نمایش لیست فلش‌کارت‌ها در صفحه
