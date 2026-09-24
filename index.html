@@ -1,25 +1,21 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فلش‌کارت‌های من</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2c3e50">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Flashcards & Grammar</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./images/icon-192x192.png">
 </head>
-<body>
-    <header>
-        <h1>فلش‌کارت‌های آفلاین</h1>
-    </header>
-    <main>
-        <p>لطفاً یک مجموعه فلش‌کارت را انتخاب کنید:</p>
-        <ul id="flashcard-list">
-            </ul>
-    </main>
-    <footer>
-        <p>این اپلیکیشن PWA است و قابلیت نصب و استفاده آفلاین را دارد.</p>
-    </footer>
-
-    <script src="app.js"></script>
+<body style="margin:0;background:#2c3e50;">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(console.error);
+    }
+    window.location.replace('./Flashcards-and-Grammar_v2.html');
+  </script>
 </body>
 </html>
