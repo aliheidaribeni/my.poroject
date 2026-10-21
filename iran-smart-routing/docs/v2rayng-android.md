@@ -16,16 +16,23 @@ In v2rayNG, export or otherwise back up the working configuration before changin
 
 The routing rules refer to `geoip:ir` and `geosite:ir`. The Xray core needs compatible `geoip.dat` and `geosite.dat` files. These are maintained upstream by [Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v2ray-rules).
 
-### Option A: Termux
+### Option A: Termux (recommended)
 
 1. Install Termux from a trusted source and open it.
-2. Install dependencies: `pkg update && pkg install curl coreutils grep`
+2. Install dependencies: `pkg update && pkg install git curl coreutils grep`
 3. Allow Termux to access shared storage: `termux-setup-storage`
-4. Download this repository (or just the script) to the phone, then run:
-   `bash download-geo-assets-termux.sh`
+4. Clone this repository and enter the Android folder:
+
+   ```bash
+   cd ~
+   git clone https://github.com/aliheidaribeni/my.poroject.git
+   cd my.poroject/iran-smart-routing/android
+   bash download-geo-assets-termux.sh
+   ```
+
 5. Verified files will be saved in `Download/IranSmartRouting/`.
 
-The script downloads both files into temporary files and only replaces the downloaded copies after both checksum checks pass. It does **not** attempt to write into v2rayNG's private app directory, which Android versions and device vendors restrict differently.
+The script downloads both files into temporary files and only replaces the downloaded copies after both checksum checks pass. It does **not** attempt to write into v2rayNG's private app directory, which Android versions and device vendors restrict differently. To update later, enter the same folder and run `bash download-geo-assets-termux.sh` again.
 
 ### Option B: Download manually
 
@@ -68,7 +75,7 @@ Preserve existing block/private-network rules and the existing proxy fallback. T
 
 ## Updating later
 
-Re-run `download-geo-assets-termux.sh` to fetch and checksum-verify the latest upstream files. Back up the current v2rayNG assets before replacing them, then restart the core and repeat the tests. A successful download does not automatically install files into v2rayNG.
+Re-run `bash download-geo-assets-termux.sh` from `my.poroject/iran-smart-routing/android` to fetch and checksum-verify the latest upstream files. Back up the current v2rayNG assets before replacing them, then restart the core and repeat the tests. A successful download does not automatically install files into v2rayNG.
 
 ## Scope and limitations
 
