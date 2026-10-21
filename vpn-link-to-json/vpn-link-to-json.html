@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VPN Link → JSON (v2rayNG)</title>
+<style>
+  :root { --bg:#f6f7f9; --fg:#1b1f24; --card:#fff; --bd:#d8dce2; --mut:#667085;
+          --ok:#127a3d; --bad:#b42318; --warn:#9a6700; --acc:#2563eb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171c; --fg:#e8eaee; --card:#1d2128; --bd:#323945; --mut:#98a2b3;
+            --ok:#4ade80; --bad:#f87171; --warn:#fbbf24; --acc:#60a5fa; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:16px/1.6 system-ui, "Segoe UI", Tahoma, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 1.25rem; margin: 8px 0 4px; }
+  p.sub { color: var(--mut); margin: 0 0 12px; }
+  textarea { width:100%; min-height: 150px; padding: 10px; direction:ltr; text-align:left;
+             border:1px solid var(--bd); border-radius:10px; background:var(--card); color:var(--fg);
+             font: 13px/1.5 ui-monospace, Consolas, monospace; resize: vertical; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; align-items:center; }
+  button { font:inherit; padding: 9px 16px; border-radius:10px; border:1px solid var(--bd);
+           background:var(--card); color:var(--fg); cursor:pointer; }
+  button.primary { background:var(--acc); border-color:var(--acc); color:#fff; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  button.small { padding:4px 10px; font-size:.85rem; }
+  .linkish { background:none; border:none; color:var(--acc); text-decoration:underline; padding:4px; font-size:.85rem; }
+  #summary { font-weight:600; margin: 8px 0; }
+  .card { background:var(--card); border:1px solid var(--bd); border-radius:12px; padding:10px 12px; margin:8px 0; }
+  .card.ok { border-inline-start:5px solid var(--ok); }
+  .card.bad { border-inline-start:5px solid var(--bad); }
+  .head { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .tag { font-size:.75rem; padding:1px 8px; border-radius:99px; border:1px solid var(--bd); color:var(--mut); direction:ltr; }
+  .name { font-weight:600; word-break:break-word; }
+  .err { color:var(--bad); margin-top:6px; }
+  .warn { color:var(--warn); margin-top:4px; font-size:.9rem; }
+  code.orig { display:block; direction:ltr; text-align:left; word-break:break-all; margin-top:6px;
+              padding:6px 8px; background:var(--bg); border-radius:8px; font-size:12px; }
+  pre.json { direction:ltr; text-align:left; overflow:auto; max-height:320px; margin:8px 0 0; padding:8px;
+             background:var(--bg); border-radius:8px; font-size:12px; }
+  details { margin-top:6px; }
+  details.help { background:var(--card); border:1px solid var(--bd); border-radius:12px; padding:8px 12px; margin-top:16px; }
+  summary { cursor:pointer; }
+  li { margin: 4px 0; }
+  .note { color:var(--mut); font-size:.85rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>تبدیل لینک VPN به JSON برای v2rayNG</h1>
+  <p class="sub">لینک‌ها را (هر خط یکی) پیست کنید ← تبدیل ← دانلود. همهٔ کارها فقط داخل مرورگر انجام می‌شود و هیچ داده‌ای ارسال نمی‌شود.</p>
+
+  <textarea id="input" spellcheck="false" placeholder="vless://...&#10;vmess://...&#10;trojan://...&#10;ss://..."></textarea>
+
+  <label class="row" style="margin-bottom:0">
+    <input type="checkbox" id="iranDirect" checked>
+    <span>سایت‌ها و IPهای ایران مستقیم (بدون فیلترشکن) بروند</span>
+  </label>
+
+  <div class="row">
+    <button class="primary" id="convertBtn">تبدیل</button>
+    <button id="downloadBtn" disabled>دانلود JSON</button>
+    <button id="clearBtn">پاک کردن</button>
+    <button class="linkish" id="arrayBtn" disabled title="فقط نسخه‌های جدید v2rayNG">دانلود به‌صورت یک آرایهٔ JSON (آزمایشی)</button>
+  </div>
+
+  <div id="summary"></div>
+  <div id="results"></div>
+
+  <details class="help">
+    <summary>راهنما و محدودیت‌ها</summary>
+    <ol>
+      <li>هر لینک به یک «کانفیگ کامل Xray» جداگانه تبدیل می‌شود (inbound سوکس روی 10808 و HTTP روی 10809 + outbound با نام <code>proxy</code>). نام لینک در فیلد <code>remarks</code> ذخیره می‌شود.</li>
+      <li>اگر یک لینک تبدیل شود، فایل <code>.json</code> دانلود می‌شود؛ اگر چند لینک باشد، یک فایل <code>.zip</code> شامل یک JSON برای هر اتصال دانلود می‌شود (zip را در گوشی باز کنید).</li>
+      <li>واردکردن در v2rayNG: دکمهٔ «+» ← واردکردن از فایل محلی (Import from local) و انتخاب فایل JSON؛ یا در هر کارت «کپی» را بزنید و «+» ← واردکردن از کلیپ‌بورد.</li>
+      <li>پورت سوکس v2rayNG باید همان 10808 (پیش‌فرض) باشد؛ اگر در تنظیمات عوض کرده‌اید، مقدار <code>port</code> داخل JSON را هم عوض کنید.</li>
+      <li>پشتیبانی‌نشده (با خطا و نمایش لینک اصلی گزارش می‌شود): Shadowsocks با plugin، رمزهای قدیمی SS (مثل aes-256-cfb)، انتقال quic، فرمت قدیمی vmess غیر JSON.</li>
+      <li>کانفیگ سفارشی تنظیمات مسیریابی خود v2rayNG (مثل «دور زدن ایران») را نادیده می‌گیرد؛ به همین دلیل گزینهٔ «ایران مستقیم» قانون‌های <code>domain:ir</code> و <code>geoip:ir</code> را داخل خود JSON می‌گذارد. بعد از تغییر گزینه دوباره «تبدیل» را بزنید.</li>
+      <li>پارامترهایی که تبدیل نشوند بی‌صدا حذف نمی‌شوند؛ به‌صورت هشدار زرد زیر همان لینک نمایش داده می‌شوند.</li>
+      <li>گزینهٔ «آرایهٔ JSON» همهٔ کانفیگ‌ها را در یک فایل می‌گذارد؛ فقط نسخه‌های جدیدتر v2rayNG آن را می‌پذیرند و گزارش‌هایی از ترتیب معکوس/اشکال در remarks وجود دارد. ZIP امن‌تر است.</li>
+    </ol>
+  </details>
+</main>
+
+<!-- ===================== CORE (no DOM access; unit-testable) ===================== -->
+<script id="core">
+"use strict";
+
+/* ---------- small helpers ---------- */
+class ConvertError extends Error {}
+const fail = (msg) => { throw new ConvertError(msg); };
+
+const lenientDecode = (s) => { try { return decodeURIComponent(s); } catch (e) { return s; } };
+const strictDecode = (s, what) => {
+  try { return decodeURIComponent(s); }
+  catch (e) { fail(what + " contains invalid percent-encoding"); }
+};
+const splitList = (s) => String(s).split(",").map((x) => x.trim()).filter(Boolean);
+const parseBool = (v) => v === true || v === 1 || /^(1|true|yes)$/i.test(String(v == null ? "" : v));
+
+/** Decode Base64 / Base64-URL (padding optional) to bytes. */
+function b64Bytes(input) {
+  let s = String(input).trim().replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/").replace(/=+$/, "");
+  if (!s) fail("Base64 data is empty");
+  if (!/^[A-Za-z0-9+/]+$/.test(s)) fail("Base64 contains invalid characters");
+  if (s.length % 4 === 1) fail("Base64 length is invalid (truncated link?)");
+  while (s.length % 4) s += "=";
+  const bin = atob(s);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function b64Text(input) {
+  const bytes = b64Bytes(input);
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
+  catch (e) { fail("Base64 content is not valid UTF-8"); }
+}
+
+/* ---------- URI parsing ---------- */
+function splitUri(link) {
+  const m = /^([A-Za-z][A-Za-z0-9+.-]*):\/\/([\s\S]*)$/.exec(link);
+  if (!m) fail("Not a valid link (expected scheme://...)");
+  let rest = m[2], fragment = "", query = "";
+  const h = rest.indexOf("#");
+  if (h >= 0) { fragment = rest.slice(h + 1); rest = rest.slice(0, h); }
+  const q = rest.indexOf("?");
+  if (q >= 0) { query = rest.slice(q + 1); rest = rest.slice(0, q); }
+  return { scheme: m[1].toLowerCase(), body: rest, query, fragment };
+}
+
+/** Query parser: keys lower-cased, no '+'→space conversion (paths may contain '+'). */
+function makeParams(query) {
+  const map = new Map();
+  for (const part of query ? query.split("&") : []) {
+    if (!part) continue;
+    const i = part.indexOf("=");
+    const k = lenientDecode(i < 0 ? part : part.slice(0, i)).toLowerCase();
+    map.set(k, i < 0 ? "" : lenientDecode(part.slice(i + 1)));
+  }
+  const used = new Set();
+  return {
+    get(...names) {
+      let found;
+      for (const n of names) {
+        if (map.has(n)) { used.add(n); if (found === undefined && map.get(n) !== "") found = map.get(n); }
+      }
+      return found;
+    },
+    mark(...names) { names.forEach((n) => used.add(n)); },
+    unused() { return [...map.keys()].filter((k) => !used.has(k)); },
+  };
+}
+
+function parsePort(p) {
+  if (p === undefined || p === null || String(p).trim() === "") fail("Port is missing");
+  if (!/^\d+$/.test(String(p).trim())) fail('Invalid port "' + p + '"');
+  const n = Number(p);
+  if (n < 1 || n > 65535) fail("Port " + n + " is out of range (1-65535)");
+  return n;
+}
+
+function parseHostPort(s) {
+  s = s.replace(/\/+$/, "");
+  let host, port;
+  if (s.startsWith("[")) {
+    const e = s.indexOf("]");
+    if (e < 0) fail("Unclosed '[' in IPv6 address");
+    host = s.slice(1, e);
+    const rest = s.slice(e + 1);
+    if (rest) { if (!rest.startsWith(":")) fail("Unexpected text after IPv6 address"); port = rest.slice(1); }
+  } else {
+    const c = s.lastIndexOf(":");
+    if (c < 0) fail("Port is missing (expected host:port)");
+    host = s.slice(0, c); port = s.slice(c + 1);
+  }
+  if (!host) fail("Server address is empty");
+  if (/[\s/@?#]/.test(host)) fail("Server address contains invalid characters");
+  return { host, port: parsePort(port) };
+}
+
+/* ---------- transport / security (shared by vless, vmess, trojan) ---------- */
+const NETS = { tcp: "tcp", raw: "tcp", ws: "ws", websocket: "ws", grpc: "grpc", gun: "grpc",
+               kcp: "kcp", mkcp: "kcp", h2: "h2", http: "h2", httpupgrade: "httpupgrade",
+               xhttp: "xhttp", splithttp: "xhttp" };
+const KCP_HEADERS = ["none", "srtp", "utp", "wechat-video", "dtls", "wireguard"];
+
+/** t = normalized transport description. Returns Xray streamSettings. */
+function buildStream(t, ctx) {
+  const rawNet = String(t.net || "tcp").toLowerCase();
+  if (rawNet === "quic") fail('Transport "quic" is not supported (not reliably convertible)');
+  const net = NETS[rawNet];
+  if (!net) fail('Unsupported transport type "' + t.net + '"');
+  const s = { network: net };
+  const hosts = t.host ? splitList(t.host) : [];
+
+  switch (net) {
+    case "tcp": {
+      const ht = String(t.headerType || "none").toLowerCase();
+      if (ht === "http") {
+        const req = {};
+        if (t.path) req.path = splitList(t.path);
+        if (hosts.length) req.headers = { Host: hosts };
+        s.tcpSettings = { header: { type: "http", request: req } };
+      } else if (ht !== "none") fail('Unsupported TCP header type "' + t.headerType + '"');
+      break;
+    }
+    case "ws": {
+      const w = {};
+      if (t.path) w.path = t.path;
+      if (t.host) w.headers = { Host: t.host };
+      if (Object.keys(w).length) s.wsSettings = w;
+      break;
+    }
+    case "grpc": {
+      const g = {};
+      if (t.serviceName) g.serviceName = t.serviceName;
+      if (t.authority) g.authority = t.authority;
+      const mode = t.mode ? String(t.mode).toLowerCase() : "";
+      if (mode === "multi") g.multiMode = true;
+      else if (mode && mode !== "gun") ctx.warn('gRPC mode "' + t.mode + '" is not recognized; ignored');
+      if (Object.keys(g).length) s.grpcSettings = g;
+      break;
+    }
+    case "kcp": {
+      const ht = String(t.headerType || "none").toLowerCase();
+      if (!KCP_HEADERS.includes(ht)) fail('Unsupported mKCP header type "' + t.headerType + '"');
+      s.kcpSettings = { header: { type: ht } };
+      if (t.seed) s.kcpSettings.seed = t.seed;
+      break;
+    }
+    case "h2": {
+      const h = {};
+      if (hosts.length) h.host = hosts;
+      if (t.path) h.path = t.path;
+      if (Object.keys(h).length) s.httpSettings = h;
+      break;
+    }
+    case "httpupgrade": {
+      const h = {};
+      if (t.path) h.path = t.path;
+      if (t.host) h.host = t.host;
+      if (Object.keys(h).length) s.httpupgradeSettings = h;
+      break;
+    }
+    case "xhttp": {
+      const x = {};
+      if (t.path) x.path = t.path;
+      if (t.host) x.host = t.host;
+      if (t.mode) x.mode = t.mode;
+      if (t.extra) {
+        try { x.extra = JSON.parse(t.extra); } catch (e) { fail("xhttp 'extra' parameter is not valid JSON"); }
+      }
+      if (Object.keys(x).length) s.xhttpSettings = x;
+      break;
+    }
+  }
+
+  const sec = String(t.security || "none").toLowerCase();
+  if (sec === "tls") {
+    const tls = {};
+    if (t.sni) tls.serverName = t.sni;
+    if (t.fp) tls.fingerprint = t.fp;
+    if (t.alpn) tls.alpn = splitList(t.alpn);
+    if (parseBool(t.insecure)) tls.allowInsecure = true;
+    s.security = "tls";
+    s.tlsSettings = tls;
+    if (!t.sni && t.host && ["ws", "httpupgrade", "xhttp", "h2"].includes(net)) {
+      ctx.warn("TLS without SNI but with a Host header: Xray will use the server address as SNI. " +
+               "(v2rayNG's own link import would use the Host.) If the connection fails, add &sni=... to the link.");
+    }
+  } else if (sec === "reality") {
+    if (!t.pbk) fail("Reality requires 'pbk' (public key)");
+    const r = { publicKey: t.pbk };
+    if (t.sni) r.serverName = t.sni;
+    if (t.fp) r.fingerprint = t.fp;
+    else ctx.warn("Reality without 'fp' (fingerprint): Xray normally requires one; the import may fail. Not filled in automatically.");
+    if (t.sid) r.shortId = t.sid;
+    if (t.spx) r.spiderX = t.spx;
+    if (t.pqv) r.mldsa65Verify = t.pqv;
+    s.security = "reality";
+    s.realitySettings = r;
+  } else if (sec === "none") {
+    s.security = "none";
+  } else {
+    fail('Unsupported security type "' + t.security + '"');
+  }
+  return s;
+}
+
+/** Transport params from a vless/trojan style query. */
+function transportFromQuery(P) {
+  return {
+    net: P.get("type"), security: P.get("security"), host: P.get("host"), path: P.get("path"),
+    headerType: P.get("headertype"), serviceName: P.get("servicename"), mode: P.get("mode"),
+    authority: P.get("authority"), seed: P.get("seed"), sni: P.get("sni", "peer"), fp: P.get("fp"),
+    alpn: P.get("alpn"), insecure: P.get("allowinsecure", "insecure"),
+    pbk: P.get("pbk"), sid: P.get("sid"), spx: P.get("spx"), pqv: P.get("pqv"), extra: P.get("extra"),
+  };
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function checkId(id, ctx) {
+  if (!id) fail("UUID / user id is empty");
+  if (!UUID_RE.test(id)) ctx.warn('User id "' + id + '" is not a standard UUID (Xray will map it to one).');
+}
+function warnUnused(P, ctx) {
+  const u = P.unused();
+  if (u.length) ctx.warn("Parameters not converted (unknown/unsupported): " + u.join(", "));
+}
+function splitAuthority(body, what) {
+  const at = body.lastIndexOf("@");
+  if (at < 0) fail("Missing '@' (expected " + what + ")");
+  return { userinfo: body.slice(0, at), hostport: body.slice(at + 1) };
+}
+
+/* ---------- protocol parsers: return {protocol, name, host, port, outbound} ---------- */
+function parseVless(u, ctx) {
+  const { userinfo, hostport } = splitAuthority(u.body, "uuid@host:port");
+  const id = strictDecode(userinfo, "UUID");
+  checkId(id, ctx);
+  const { host, port } = parseHostPort(hostport);
+  const P = makeParams(u.query);
+  let encryption = P.get("encryption");
+  if (!encryption) { encryption = "none"; ctx.warn("No 'encryption' parameter; using \"none\" (the only value VLESS links normally carry)."); }
+  const user = { id, encryption, level: 0 };
+  const flow = P.get("flow");
+  if (flow) user.flow = flow;
+  P.mark("remarks", "ps");
+  const stream = buildStream(transportFromQuery(P), ctx);
+  warnUnused(P, ctx);
+  return {
+    protocol: "vless", name: lenientDecode(u.fragment).trim(), host, port,
+    outbound: { tag: "proxy", protocol: "vless", settings: { vnext: [{ address: host, port, users: [user] }] }, streamSettings: stream },
+  };
+}
+
+function parseTrojan(u, ctx) {
+  const { userinfo, hostport } = splitAuthority(u.body, "password@host:port");
+  const password = strictDecode(userinfo, "Password");
+  if (!password) fail("Trojan password is empty");
+  const { host, port } = parseHostPort(hostport);
+  const P = makeParams(u.query);
+  const t = transportFromQuery(P);
+  if (!t.security) { t.security = "tls"; ctx.warn("No 'security' parameter; assuming TLS (Trojan's normal mode)."); }
+  P.mark("remarks", "ps");
+  const stream = buildStream(t, ctx);
+  warnUnused(P, ctx);
+  return {
+    protocol: "trojan", name: lenientDecode(u.fragment).trim(), host, port,
+    outbound: { tag: "proxy", protocol: "trojan", settings: { servers: [{ address: host, port, password, level: 0 }] }, streamSettings: stream },
+  };
+}
+
+const VMESS_KNOWN = ["v", "ps", "add", "port", "id", "aid", "scy", "net", "type", "host", "path", "tls",
+                     "sni", "alpn", "fp", "allowinsecure", "insecure"];
+const VMESS_CIPHERS = ["auto", "aes-128-gcm", "chacha20-poly1305", "none", "zero"];
+
+function parseVmess(u, ctx) {
+  if (u.body.includes("@")) fail("This vmess:// format (uuid@host:port) is not supported; only the Base64-JSON format (v2rayN) is");
+  const text = b64Text(u.body);
+  let j;
+  try { j = JSON.parse(text); } catch (e) { fail("Decoded vmess data is not valid JSON (legacy non-JSON vmess format is not supported)"); }
+  if (!j || typeof j !== "object" || Array.isArray(j)) fail("Decoded vmess data is not a JSON object");
+  const L = {}; // case-insensitive view
+  for (const k of Object.keys(j)) L[k.toLowerCase()] = j[k];
+  const str = (v) => (v === undefined || v === null ? "" : String(v).trim());
+  const host = str(L.add), id = str(L.id);
+  if (!host) fail("vmess JSON is missing 'add' (server address)");
+  if (/[\s/@?#]/.test(host)) fail("Server address contains invalid characters");
+  const port = parsePort(str(L.port));
+  checkId(id, ctx);
+
+  const net = str(L.net) || "tcp";
+  const t = { net, security: "none", host: str(L.host), sni: str(L.sni), fp: str(L.fp), alpn: str(L.alpn),
+              insecure: L.allowinsecure !== undefined ? L.allowinsecure : L.insecure };
+  const tlsv = str(L.tls).toLowerCase();
+  if (tlsv === "tls") t.security = "tls";
+  else if (tlsv === "" || tlsv === "none") t.security = "none";
+  else fail('Unsupported vmess "tls" value "' + L.tls + '"');
+  const type = str(L.type), path = str(L.path);
+  const n = (NETS[net.toLowerCase()] || net);
+  if (n === "grpc") { t.serviceName = path; t.mode = type; }
+  else if (n === "kcp") { t.seed = path; t.headerType = type; }
+  else if (n === "tcp") { t.headerType = type; t.path = path; }
+  else { t.path = path; }
+
+  const user = { id, level: 0 };
+  if (L.aid !== undefined && str(L.aid) !== "") {
+    if (!/^\d+$/.test(str(L.aid))) fail('Invalid alterId "' + L.aid + '"');
+    user.alterId = Number(L.aid);
+    if (user.alterId > 0) ctx.warn("alterId > 0 (legacy VMess) is rejected/ignored by current Xray-core; the server must use alterId 0.");
+  }
+  if (str(L.scy)) {
+    const sc = str(L.scy).toLowerCase();
+    if (!VMESS_CIPHERS.includes(sc)) fail('Unsupported VMess cipher "' + L.scy + '"');
+    user.security = sc;
+  }
+  const stream = buildStream(t, ctx);
+  const extra = Object.keys(j).filter((k) => !VMESS_KNOWN.includes(k.toLowerCase()));
+  if (extra.length) ctx.warn("vmess JSON fields not converted: " + extra.join(", "));
+  return {
+    protocol: "vmess", name: str(L.ps) || lenientDecode(u.fragment).trim(), host, port,
+    outbound: { tag: "proxy", protocol: "vmess", settings: { vnext: [{ address: host, port, users: [user] }] }, streamSettings: stream },
+  };
+}
+
+const SS_METHODS = ["aes-128-gcm", "aes-256-gcm", "chacha20-poly1305", "chacha20-ietf-poly1305",
+  "xchacha20-poly1305", "xchacha20-ietf-poly1305", "none", "plain",
+  "2022-blake3-aes-128-gcm", "2022-blake3-aes-256-gcm", "2022-blake3-chacha20-poly1305"];
+
+function parseSS(u, ctx) {
+  let cred, hostport;
+  const at = u.body.lastIndexOf("@");
+  if (at >= 0) {
+    // SIP002: userinfo@host:port  (userinfo = base64(method:password) or plain percent-encoded method:password)
+    const dec = strictDecode(u.body.slice(0, at), "Credentials");
+    cred = dec.includes(":") ? dec : b64Text(dec);
+    hostport = u.body.slice(at + 1);
+  } else {
+    // Legacy: base64(method:password@host:port)
+    const all = b64Text(strictDecode(u.body, "Link body"));
+    const a2 = all.lastIndexOf("@");
+    if (a2 < 0) fail("Decoded legacy Shadowsocks data has no '@' (expected method:password@host:port)");
+    cred = all.slice(0, a2); hostport = all.slice(a2 + 1);
+  }
+  const c = cred.indexOf(":");
+  if (c < 0) fail("Credentials must look like method:password");
+  const method = cred.slice(0, c).trim().toLowerCase(), password = cred.slice(c + 1);
+  if (!method) fail("Shadowsocks method is empty");
+  if (!SS_METHODS.includes(method)) fail('Cipher "' + method + '" is not supported by Xray-core (legacy stream ciphers were removed)');
+  if (!password && method !== "none" && method !== "plain") fail("Shadowsocks password is empty");
+  const { host, port } = parseHostPort(hostport);
+  const P = makeParams(u.query);
+  const plugin = P.get("plugin");
+  if (plugin) fail('Shadowsocks plugin "' + plugin.split(";")[0] + '" cannot be expressed in an Xray JSON config reliably; not converted');
+  warnUnused(P, ctx);
+  return {
+    protocol: "ss", name: lenientDecode(u.fragment).trim(), host, port,
+    outbound: { tag: "proxy", protocol: "shadowsocks", settings: { servers: [{ address: host, port, method, password, level: 0 }] } },
+  };
+}
+
+/* ---------- full Xray config wrapper (what v2rayNG imports as a custom config) ---------- */
+function wrapConfig(remarks, outbound, opts) {
+  // Custom configs bypass v2rayNG's own routing settings, so Iran-direct must live in the JSON.
+  // Only geoip:ir / geoip:private (always in geoip.dat) and the ".ir" suffix are used, so no extra
+  // geosite file is required (a missing geo tag would stop Xray from starting).
+  const iranDirect = !opts || opts.iranDirect !== false;
+  const routing = iranDirect
+    ? { domainStrategy: "IPIfNonMatch", rules: [
+        { type: "field", outboundTag: "direct", domain: ["domain:ir"] },
+        { type: "field", outboundTag: "direct", ip: ["geoip:private", "geoip:ir"] },
+      ] }
+    : { domainStrategy: "AsIs", rules: [] };
+  return {
+    remarks,
+    log: { loglevel: "warning" },
+    inbounds: [
+      { tag: "socks", port: 10808, listen: "127.0.0.1", protocol: "socks",
+        settings: { auth: "noauth", udp: true, userLevel: 8 },
+        sniffing: { enabled: true, destOverride: ["http", "tls"], routeOnly: false } },
+      { tag: "http", port: 10809, listen: "127.0.0.1", protocol: "http", settings: { userLevel: 8 } },
+    ],
+    outbounds: [
+      outbound,
+      { tag: "direct", protocol: "freedom", settings: {} },
+      { tag: "block", protocol: "blackhole", settings: { response: { type: "http" } } },
+    ],
+    routing,
+  };
+}
+
+/* ---------- public API ---------- */
+const PARSERS = { vless: parseVless, vmess: parseVmess, trojan: parseTrojan, ss: parseSS };
+
+function convertLink(raw, opts) {
+  const link = String(raw).trim();
+  const ctx = { warnings: [], warn(m) { this.warnings.push(m); } };
+  const u = splitUri(link);
+  const parser = PARSERS[u.scheme];
+  if (!parser) fail('Unsupported protocol "' + u.scheme + '://" (supported: vless, vmess, trojan, ss)');
+  const r = parser(u, ctx);
+  const name = r.name || r.protocol + "-" + r.host + ":" + r.port;
+  return { protocol: r.protocol, name, host: r.host, port: r.port, config: wrapConfig(name, r.outbound, opts), warnings: ctx.warnings };
+}
+
+/** Convert pasted text (one link per line). Never throws; each line gets its own result. */
+function convertAll(text, opts) {
+  const results = [];
+  String(text).split(/\r?\n/).forEach((line, i) => {
+    const link = line.trim();
+    if (!link) return;
+    try {
+      const r = convertLink(link, opts);
+      results.push(Object.assign({ ok: true, line: i + 1, link }, r));
+    } catch (e) {
+      const msg = e instanceof ConvertError ? e.message : "Unexpected error: " + (e && e.message ? e.message : e);
+      results.push({ ok: false, line: i + 1, link, error: msg });
+    }
+  });
+  return results;
+}
+
+/* ---------- file output ---------- */
+const toJson = (cfg) => JSON.stringify(cfg, null, 2);
+const slug = (s) => String(s).replace(/[^A-Za-z0-9.-]/g, "_").slice(0, 40) || "server";
+const pad = (n) => String(n).padStart(2, "0");
+function fileNameFor(r, idx) { return pad(idx + 1) + "_" + r.protocol + "_" + slug(r.host) + ".json"; }
+
+let CRC_TABLE = null;
+function crc32(bytes) {
+  if (!CRC_TABLE) {
+    CRC_TABLE = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; CRC_TABLE[n] = c >>> 0; }
+  }
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+/** Minimal ZIP writer (method 0 = stored, UTF-8 names). files: [{name, text}] → Uint8Array */
+function makeZip(files) {
+  const enc = new TextEncoder();
+  const d = new Date();
+  const dosTime = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const dosDate = (((d.getFullYear() - 1980) & 0x7F) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  const parts = [], central = [];
+  let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), data = enc.encode(f.text), crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true);
+    lh.setUint16(8, 0, true); lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true);
+    lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true);
+    lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    parts.push(new Uint8Array(lh.buffer), name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true);
+    ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true); ch.setUint16(12, dosTime, true);
+    ch.setUint16(14, dosDate, true); ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true);
+    ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true);
+    ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + data.length;
+  }
+  const cdSize = central.reduce((a, b) => a + b.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+  const all = [...parts, ...central, new Uint8Array(end.buffer)];
+  const out = new Uint8Array(all.reduce((a, b) => a + b.length, 0));
+  let p = 0; for (const a of all) { out.set(a, p); p += a.length; }
+  return out;
+}
+
+const VPNCORE = { convertLink, convertAll, toJson, fileNameFor, makeZip, crc32 };
+</script>
+
+<!-- ===================== UI ===================== -->
+<script>
+"use strict";
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let results = [];
+
+  function saveBlob(blob, filename) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) { /* fall through */ }
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    ta.remove(); return ok;
+  }
+
+  const el = (tag, cls, text) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;   // textContent only: link names can't inject HTML
+    return e;
+  };
+
+  function render() {
+    const box = $("results");
+    box.textContent = "";
+    const good = results.filter((r) => r.ok);
+    $("summary").textContent = results.length
+      ? results.length + " لینک: " + good.length + " موفق، " + (results.length - good.length) + " ناموفق"
+      : "هیچ لینکی پیدا نشد.";
+    $("downloadBtn").disabled = good.length === 0;
+    $("arrayBtn").disabled = good.length < 2;
+
+    results.forEach((r, idx) => {
+      const card = el("div", "card " + (r.ok ? "ok" : "bad"));
+      const head = el("div", "head");
+      head.appendChild(el("span", "tag", "خط " + r.line));
+      if (r.ok) {
+        head.appendChild(el("span", "tag", r.protocol));
+        head.appendChild(el("span", "name", r.name));
+      } else {
+        head.appendChild(el("span", "name", "ناموفق"));
+      }
+      card.appendChild(head);
+
+      if (r.ok) {
+        (r.warnings || []).forEach((w) => card.appendChild(el("div", "warn", "⚠ " + w)));
+        const json = VPNCORE.toJson(r.config);
+        const det = el("details");
+        det.appendChild(el("summary", null, "پیش‌نمایش JSON"));
+        det.appendChild(el("pre", "json", json));
+        card.appendChild(det);
+        const row = el("div", "row");
+        const cp = el("button", "small", "کپی");
+        cp.onclick = async () => { const ok = await copyText(json); cp.textContent = ok ? "کپی شد ✓" : "کپی نشد"; };
+        const dl = el("button", "small", "دانلود این مورد");
+        dl.onclick = () => saveBlob(new Blob([json], { type: "application/json" }), VPNCORE.fileNameFor(r, idx));
+        row.appendChild(cp); row.appendChild(dl);
+        card.appendChild(row);
+      } else {
+        card.appendChild(el("div", "err", r.error));
+        card.appendChild(el("code", "orig", r.link));
+      }
+      box.appendChild(card);
+    });
+  }
+
+  $("convertBtn").onclick = () => { results = VPNCORE.convertAll($("input").value, { iranDirect: $("iranDirect").checked }); render(); };
+  $("clearBtn").onclick = () => { $("input").value = ""; results = []; render(); $("summary").textContent = ""; };
+
+  $("downloadBtn").onclick = () => {
+    const good = results.filter((r) => r.ok);
+    if (good.length === 1) {
+      saveBlob(new Blob([VPNCORE.toJson(good[0].config)], { type: "application/json" }), VPNCORE.fileNameFor(good[0], 0));
+    } else if (good.length > 1) {
+      const files = good.map((r, i) => ({ name: VPNCORE.fileNameFor(r, i), text: VPNCORE.toJson(r.config) }));
+      saveBlob(new Blob([VPNCORE.makeZip(files)], { type: "application/zip" }), "v2rayng-configs.zip");
+    }
+  };
+
+  $("arrayBtn").onclick = () => {
+    const arr = results.filter((r) => r.ok).map((r) => r.config);
+    saveBlob(new Blob([JSON.stringify(arr, null, 2)], { type: "application/json" }), "v2rayng-configs-array.json");
+  };
+})();
+</script>
+</body>
+</html>
