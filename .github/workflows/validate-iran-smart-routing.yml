@@ -1,0 +1,50 @@
+name: Validate Iran Smart Routing
+
+on:
+  pull_request:
+    paths:
+      - "iran-smart-routing/**"
+      - ".github/workflows/validate-iran-smart-routing.yml"
+  push:
+    branches: [main]
+    paths:
+      - "iran-smart-routing/**"
+      - ".github/workflows/validate-iran-smart-routing.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Xray routing JSON and policy
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("iran-smart-routing/rules/xray-routing-snippet.json")
+          config = json.loads(path.read_text(encoding="utf-8"))
+          assert isinstance(config.get("routing"), dict), "missing routing object"
+          rules = config["routing"].get("rules")
+          assert isinstance(rules, list) and len(rules) >= 2, "expected at least two routing rules"
+
+          def has_rule(kind, matcher, tag="direct"):
+              return any(
+                  matcher in rule.get(kind, []) and rule.get("outboundTag") == tag
+                  for rule in rules
+              )
+
+          assert has_rule("ip", "geoip:ir"), "geoip:ir must route to direct"
+          assert has_rule("domain", "geosite:ir"), "geosite:ir must route to direct"
+          print("Routing JSON is valid; Iran IP and domain rules target direct.")
+          PY
+      - name: Check Android guide and updater are present
+        run: |
+          test -s iran-smart-routing/docs/v2rayng-android.md
+          test -x iran-smart-routing/android/download-geo-assets-termux.sh
+          grep -q "v2rayNG" iran-smart-routing/docs/v2rayng-android.md
+          grep -q "sha256sum" iran-smart-routing/android/download-geo-assets-termux.sh
