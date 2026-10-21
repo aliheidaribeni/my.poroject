@@ -8,15 +8,18 @@ A reusable set of rules and setup notes for routing Iranian destinations directl
 - Routes Iranian IP ranges and domains through `direct`.
 - Leaves the proxy as the fallback for other traffic.
 - Keeps client-specific setup notes separate so the same policy can be reused across devices.
+- Includes an Android/Termux downloader that verifies upstream SHA-256 checksums before replacing downloaded files.
+- Runs GitHub Actions checks to validate the routing JSON and Android support files.
 
 **Important:** routing rules only work when the client/core supports the rule syntax and the matching geo files are installed where that core expects them. Client UI labels and import formats vary by version.
 
 ## Files
 
 - `rules/xray-routing-snippet.json`: Xray routing rules to adapt to an existing config.
-- `scripts/update-iran-geo-assets.sh`: downloads and validates Iran `geoip.dat` and `geosite.dat` files, backing up existing copies first.
+- `scripts/update-iran-geo-assets.sh`: downloads and validates Iran `geoip.dat` and `geosite.dat` files for supported Linux installations, backing up existing copies first.
 - `docs/v2rayn-linux.md`: Linux v2rayN setup.
-- `docs/v2rayng-android.md`: Android v2rayNG setup.
+- `docs/v2rayng-android.md`: Android v2rayNG setup, update steps, testing, and troubleshooting.
+- `android/download-geo-assets-termux.sh`: Android/Termux downloader; saves verified files to shared Downloads. It intentionally does not attempt to write to Android's restricted app directories.
 
 ## Routing policy
 
@@ -27,11 +30,15 @@ Place the following rules **before** a catch-all proxy rule:
 3. Keep private/local destinations direct if that is already part of your setup.
 4. Keep the existing proxy fallback for the remaining traffic.
 
-Do not replace your whole client configuration with the snippet. Merge the rules into the existing routing section and preserve your actual outbound tags. This project assumes outbounds named `direct` and `proxy`; change the tags if your configuration uses different names.
+Do not replace your whole client configuration with the snippet. Merge the rules into the existing routing section and preserve your actual outbound tags. This project assumes an outbound named `direct`; change the tag if your configuration uses another name.
 
-## Update geo assets
+## Android quick start
 
-On Linux, run:
+Read [the v2rayNG Android guide](docs/v2rayng-android.md). The Termux script downloads and verifies geo files into shared Downloads, but Android's storage restrictions mean copying them into v2rayNG's active assets directory may require a supported file manager, app import/update flow, or USB/ADB. Downloading is not the same as installing.
+
+## Update geo assets on Linux
+
+From this directory:
 
 ```bash
 chmod +x scripts/update-iran-geo-assets.sh
@@ -43,8 +50,6 @@ By default, the script detects common v2rayN/Xray locations. To specify the targ
 ```bash
 ./scripts/update-iran-geo-assets.sh "$HOME/.local/share/v2rayN/bin/xray"
 ```
-
-The script downloads into temporary files, checks that each file is non-empty, and backs up existing files before replacing them. Restart the client/core after updating.
 
 ## Safety and troubleshooting
 
