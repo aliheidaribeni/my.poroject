@@ -20,6 +20,7 @@ A reusable set of rules and setup notes for routing Iranian destinations directl
 - `docs/v2rayn-linux.md`: Linux v2rayN setup.
 - `docs/v2rayng-android.md`: Android v2rayNG setup, update steps, testing, and troubleshooting.
 - `android/download-geo-assets-termux.sh`: Android/Termux downloader; saves verified files to shared Downloads. It intentionally does not attempt to write to Android's restricted app directories.
+- `android/vpn-link-to-json.html`: offline, browser-based converter for VLESS, VMess, Trojan, and Shadowsocks links into Xray JSON files for v2rayNG.
 
 ## Routing policy
 
@@ -34,7 +35,7 @@ Do not replace your whole client configuration with the snippet. Merge the rules
 
 ## Android quick start
 
-Read [the v2rayNG Android guide](docs/v2rayng-android.md). The Termux script downloads and verifies geo files into shared Downloads, but Android's storage restrictions mean copying them into v2rayNG's active assets directory may require a supported file manager, app import/update flow, or USB/ADB. Downloading is not the same as installing.
+Open the [VPN Link → JSON converter](android/vpn-link-to-json.html) in a browser, or download the HTML file and open it on Android. It processes links locally in the browser; paste one link per line and download the generated JSON/ZIP. Then read [the v2rayNG Android guide](docs/v2rayng-android.md). The Termux script downloads and verifies geo files into shared Downloads, but Android's storage restrictions mean copying them into v2rayNG's active assets directory may require a supported file manager, app import/update flow, or USB/ADB. Downloading is not the same as installing.
 
 ## Update geo assets on Linux
 
