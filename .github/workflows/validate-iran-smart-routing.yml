@@ -45,6 +45,7 @@ jobs:
       - name: Check Android guide and updater are present
         run: |
           test -s iran-smart-routing/docs/v2rayng-android.md
-          test -x iran-smart-routing/android/download-geo-assets-termux.sh
+          test -s iran-smart-routing/android/download-geo-assets-termux.sh
+          bash -n iran-smart-routing/android/download-geo-assets-termux.sh
           grep -q "v2rayNG" iran-smart-routing/docs/v2rayng-android.md
           grep -q "sha256sum" iran-smart-routing/android/download-geo-assets-termux.sh
